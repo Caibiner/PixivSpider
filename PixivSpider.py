@@ -133,12 +133,12 @@ if __name__ == '__main__':
        
         author_id = file.readline().replace('\n', '')
       
-        author_img_dic = get_author_img_dic(author_id, 'aomiao9311z@qq.com', 'zhejiushimima')
+        author_img_dic = get_author_img_dic(author_id, 'username', 'password')
         illusts_list = get_author_illusts(author_img_dic)
        
         print("ID%sprogress：\n"%author_id)
         for img_id in tqdm(illusts_list):
-            img_dic = get_img_dic(img_id, 'aomiao9311z@qq.com', 'zhejiushimima')
+            img_dic = get_img_dic(img_id, 'username', 'password')
             address = 'I://pixivs/' + img_dic['authorName']
 
             
