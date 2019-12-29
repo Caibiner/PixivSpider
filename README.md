@@ -1,2 +1,5 @@
-# python
-这个仓库主要用来装一些我自己的一些爬虫小项目。
+# pythonsipder
+
+
+In Pixiv
+you can only modified begin's parameter and path to run this progress。 
