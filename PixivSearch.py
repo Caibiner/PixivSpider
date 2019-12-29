@@ -1,14 +1,15 @@
 
+
 #
 #1.remember to change your Chrome User Data path
-# 
+#
 #2.notice to modified path
 #
 #3.when run this progress must close all Chrome browser
 #
 #4.Chinese user :首先得能上P站！
 #
-#5.user must install webdriver selenium Chrome
+#
 #
 #
 from bs4 import BeautifulSoup
@@ -97,12 +98,7 @@ def download(url_msg,address,keys):
                     f.write(r.content)
                     f.close()
         except:
-            print("下载失败,重试中")
-            if r.status_code ==200:
-                r = requests.get(key,headers=headers)
-                with open('%s%s.jpg'%(path,values),'wb') as f:
-                    f.write(r.content)
-                    f.close()
+                continue
 
 def begin(keys,hot,address):
     page = 1
@@ -120,9 +116,10 @@ def begin(keys,hot,address):
             return
         t = Thread(target=download,args=(url_msg,address,keys))
         t.start()
+        t.join()
         
         page = page+1
-        time.sleep(10)
+        
     
 if __name__ == "__main__":
 
