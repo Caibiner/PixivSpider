@@ -1,0 +1,99 @@
+import os,re,time,requests
+from threading import Thread
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+from tqdm import tqdm
+
+headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0'
+        , 'Referer':'https://www.pixiv.net/member_illust.php?mode=medium&illust_id=70639869'
+    }
+def selesearch(keys,hot):
+    print("跳转页面中...")
+    try:
+        chrome_options = Options()
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        chrome_driver = "C:\Program Files (x86)\Google\Chrome\Application\chromedriver.exe"
+        driver = webdriver.Chrome(chrome_driver, options=chrome_options)
+        driver.get("https://www.pixiv.net/")
+        se_text = driver.find_element_by_id('suggest-input')
+    except:
+        print("寻找页面失败!正在重试")
+        selesearch(keys,hot)
+
+    
+    #输入的字符串
+    key_meg = keys+' '+hot+'users入り'
+    se_text.send_keys(key_meg)
+    driver.find_element_by_css_selector("[class='submit sprites-search-old']").click()
+    time.sleep(1)
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    # driver.find_elements_by_css_selector("[class='sc-LzNPC gYaVLD']")[1].click()
+    #找出共多少页
+    # pages = len(driver.find_elements_by_css_selector("[class='sc-LzNPC gYaVLD']"))
+    # print(pages)
+    # #返回页面
+     
+    #  #由于是分页式加载
+    # html_list=[]
+    # for i in range(pages):
+    #     driver.find_element_by_css_selector("[class='sc-LzNPC gYaVLD']")[i].click()
+    #     time.sleep(2)
+    #     html_list.append(driver.page_source)
+
+    html_list = driver.page_source
+    return html_list
+
+def re_html(html_list):
+    print("开始解析页面...")
+    # soups = []
+    # for html in html_list:
+    #     soup =  BeautifulSoup(html,'html_parse')
+    #     soups.append(soup)
+    soup = BeautifulSoup(html_list,'lxml')
+    print(soup)
+    img_dict = {}
+    soup.find
+    img_list = []
+    # for ur in img_url:
+    #     #把url中的大小去掉，比如https://i.pximg.net/img-master/img/2019/12/15/21/57/24/78312861_p0_master1200.jpg
+    #     original_size = re.sub(r"c(.+?)/",'',ur)
+    #     master = re.sub(r'square','master',original_size) 
+    #     img_list.append(master)
+
+    return img_list
+    
+def download(big_url,address,keys):
+    print("正在下载...")
+    #P给图片取名
+    path = address+keys+'/'
+    if not os.path.exists(path):
+        os.mkdir(path)
+    for url in tqdm(big_url):
+        try:
+            r = requests.get(url,headers=headers)
+            with open('%s%d.jpg'%(path,img['img']),'wb') as f:
+                f.write(r.content)
+                f.close()
+        except:
+            print("下载失败,重试")
+            r = requests.get(url,headers=headers)
+            with open('%s%d.jpg'%(path,img['img']),'wb') as f:
+                f.write(r.content)
+                f.close()
+
+def begin(keys,hot,address):
+    html_list = selesearch(keys,hot)
+    img_list = re_html(html_list)
+    t = Thread(target=download,args=(img_list,address,keys))
+    t.start()
+    
+if __name__ == "__main__":
+    html = selesearch('女の子','50000')
+    re_html(html)
