@@ -21,7 +21,9 @@ def sele_id(author_id,page):
     chrome_options.add_argument("user-data-dir="+os.path.abspath(chrome_dir))
     driver = webdriver.Chrome(chrome_options=chrome_options)
     driver.get('https://www.pixiv.net/member_illust.php?id=%s&p=%d'%(author_id,page))
-    time.sleep(3)
+    time.sleep(1)
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(1)
     html = driver.page_source
     driver.close
     return html
@@ -34,9 +36,15 @@ def req_img(html):
     for img in imgs:
 
         #拼凑大图
-        url = 'https://i.pximg.net/img-master/img/'+re.findall(r'/img/(.+?)_',img)[0]+'_p0_master1200.jpg'
+        # "https://i.pximg.net/img-original/img/2015/07/04/16/51/11/51235727_p0.jpg"
+
+        #因为原图有两种格式，只能全都要
+        # url = 'https://i.pximg.net/img-master/img/'+re.findall(r'/img/(.+?)_',img)[0]+'_p0_master1200.jpg'
+        url_png ='https://i.pximg.net/img-original/img/'+re.findall(r'/img/(.+?)_',img)[0]+'_p0.png'
     
-        url_list.append(url)
+        url_list.append(url_png)
+        url_jpg ='https://i.pximg.net/img-original/img/'+re.findall(r'/img/(.+?)_',img)[0]+'_p0.jpg'
+        url_list.append(url_jpg)
         
     return url_list
 
@@ -45,7 +53,7 @@ def download(url_list,author_id,address,page):
     #给图片取名
     name = 1
 
-    path = address+author_id+'/'
+    path = address+author_id+'test1/'
 
     if not os.path.exists(path):
         os.mkdir(path)
@@ -54,15 +62,21 @@ def download(url_list,author_id,address,page):
         try:
             
             r = requests.get(url,headers=headers)
-            with open('%s%d(%d).jpg'%(path,page,name),'wb') as f:
-                f.write(r.content)
-                f.close()
+            if r.status_code ==200:
+                with open('%s%d(%d).jpg'%(path,page,name),'wb') as f:
+                    f.write(r.content)
+                    f.close()
+            else:
+                continue
         except:
             print("下载失败,重试") 
             r = requests.get(url,headers=headers)
-            with open('%s%d(%d).jpg'%(path,page,name),'wb') as f:
-                f.write(r.content)
-                f.close()
+            if r.status_code ==200:
+                with open('%s%d(%d).jpg'%(path,page,name),'wb') as f:
+                    f.write(r.content)
+                    f.close()
+            else:
+                continue
         name = name+1
 
 def begin(author_id,address):
