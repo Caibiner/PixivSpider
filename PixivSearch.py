@@ -19,18 +19,23 @@ from selenium import webdriver
 from lxml import etree
 from threading import Thread
 from tqdm import tqdm
+from selenium.webdriver.chrome.options import Options
 
 headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0'
         , 'Referer':'https://www.pixiv.net/member_illust.php?mode=medium&illust_id=70639869'
     }
+
+
 def selesearch(keys,hot,page):
     print("跳转页面中...")
     chrome_dir = r'C:\Users\admin\AppData\Local\Google\Chrome\User Data'
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("user-data-dir="+os.path.abspath(chrome_dir))
+    chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(chrome_options=chrome_options)
-    key_meg = keys+' '+hot+'users入り'
+    
+    key_meg = keys+hot+'users入り'
     driver.get('https://www.pixiv.net/tags/%s/artworks?p=%d&s_mode=s_tag'%(key_meg,page)) 
     time.sleep(1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -55,6 +60,7 @@ def re_html(html):
     dom = etree.HTML(html)
     #找图片地址
     imgs = dom.xpath('//img[contains(@src,"1200")]/@src')
+    print(imgs)
     #找图片名字
     img_name =dom.xpath('//img[contains(@src,"1200")]/@alt')
 
@@ -117,11 +123,10 @@ def begin(keys,hot,address):
         t = Thread(target=download,args=(url_msg,address,keys))
         t.start()
         t.join()
-        
         page = page+1
         
     
 if __name__ == "__main__":
 
     #parameter: keys, hot ,path
-   begin('女','10000','I://pixivs/')
+   begin('風景','10000','I://landscape/')
