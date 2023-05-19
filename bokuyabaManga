@@ -1,0 +1,93 @@
+
+from bs4 import BeautifulSoup
+import re,os,time
+import requests
+from selenium import webdriver
+from lxml import etree
+from threading import Thread
+from tqdm import tqdm
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.keys import Keys
+from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+
+
+
+headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0'
+        , 'Referer':'https://mangacross.jp/comics/yabai/128'
+    }
+
+
+print("跳转页面中...")
+
+chrome_options = Options()
+
+chrome_driver = "E:\chromedriver.exe"
+driver = webdriver.Chrome(chrome_driver, options=chrome_options)
+
+#获取页面
+
+driver.get('https://mangacross.jp/comics/yabai/128') 
+
+
+#点击阅读
+driver.find_element_by_class_name('viewer-page__button').click()
+
+#往左点20下
+urls = []
+image_urls=   []
+elements = driver.find_elements_by_xpath('//div[@class="comic__pageContent"]')
+# 创建一个ActionChains对象
+actions = ActionChains(driver)
+
+# 模拟按下左箭头键
+for i in range(25):  
+    actions.send_keys(Keys.LEFT)
+    # 执行操作
+    actions.perform()
+    for element in elements:
+        style = element.get_attribute("style")
+        pattern = r'background-image: url\("([^"]+)"\)'
+        match = re.search(pattern, style)
+        if match:
+            background_image_url = match.group(1)
+            urls.append(background_image_url)
+    time.sleep(1)
+    print(i)
+print(image_urls.count)
+#获取标签
+
+# 遍历每个元素并提取background-image的URL
+
+for url in urls:
+    image_urls.append(url.split('?')[0])
+       
+    
+#去掉重复
+image_urls_end = list(set(image_urls))
+
+save_dir = r'E:\bokuyaba'
+
+
+# 遍历图片链接列表并保存
+for i, image_url in enumerate(image_urls_end):
+    # 发送GET请求获取图片数据
+    response = requests.get(image_url)
+    
+    # 确保请求成功
+    if response.status_code == 200:
+        # 提取图片文件名
+        filename = str(i) + os.path.basename(image_url)
+        
+        # 保存图片到本地
+        save_path = os.path.join(save_dir, filename)
+        with open(save_path, 'wb') as file:
+            file.write(response.content)
+        
+        print(f'Saved image {i+1}: {save_path}')
+    else:
+        print(f'Failed to download image {i+1}: {image_url}')
+        
+        
